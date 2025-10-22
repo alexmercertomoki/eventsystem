@@ -1,0 +1,22 @@
+{
+  "name": "eventsystem",
+  "version": "1.0.0",
+  "description": "活动平台系统",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm run dev --workspace=packages/server",
+    "build": "npm run build --workspace=packages/server",
+    "start": "npm run start --workspace=packages/server",
+    "test": "npm run test --workspace=packages/server",
+    "db:migrate": "npm run db:migrate --workspace=packages/server",
+    "db:seed": "npm run db:seed --workspace=packages/server",
+    "db:studio": "npm run db:studio --workspace=packages/server"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
