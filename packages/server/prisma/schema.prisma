@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 管理员模型
+model Admin {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String    // bcrypt hashed
+  name          String
+  role          Role      @default(ADMIN)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?   // 创建者的Admin ID
+
+  events        Event[]
+  contentBlocks ContentBlock[]
+
+  @@index([email])
+  @@map("admins")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+}
+
+// 活动模型
+model Event {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  description   String?      @db.Text
+  coverImage    String?
+  startTime     DateTime
+  endTime       DateTime
+  location      String?
+  status        EventStatus  @default(DRAFT)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  publishedAt   DateTime?
+
+  createdBy     String
+  admin         Admin        @relation(fields: [createdBy], references: [id])
+  contentBlocks ContentBlock[]
+
+  @@index([status, startTime])
+  @@index([slug])
+  @@index([createdBy])
+  @@map("events")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+// 内容块模型（用于 Canvas 编辑器）
+model ContentBlock {
+  id          String    @id @default(cuid())
+  eventId     String
+  type        BlockType
+  content     Json      // 存储具体内容
+  orderIndex  Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy   String
+  admin       Admin     @relation(fields: [createdBy], references: [id])
+
+  @@unique([eventId, orderIndex])
+  @@index([eventId])
+  @@map("content_blocks")
+}
+
+enum BlockType {
+  TEXT
+  IMAGE
+}
